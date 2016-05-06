@@ -4,10 +4,13 @@ package de.uulm.vs.discard;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
 
-public class DiscardServerHandler extends ChannelInboundHandlerAdapter{
+import java.util.logging.Logger;
+
+public class DiscardServerHandler extends ChannelInboundHandlerAdapter {
+
+    private final static Logger LOGGER = Logger.getLogger(DiscardServerHandler.class.getName());
 
     //This method is called with the received message, whenever new data is received from a client.
     @Override
@@ -21,6 +24,7 @@ public class DiscardServerHandler extends ChannelInboundHandlerAdapter{
         ByteBuf in = (ByteBuf) msg;
         try {
             while (in.isReadable()) { // (1)
+//                LOGGER.info(in.toString());
                 System.out.print((char) in.readByte());
                 System.out.flush();
             }
