@@ -16,15 +16,16 @@ public class DiscardServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) { // (2)
 //TODO: Reading msg form different pipelines in a same time -> separate the msg from different pipelines
-
-// This code print the message to the console
+        
         ByteBuf in = (ByteBuf) msg;
         try {
-            while (in.isReadable()) { // (1)
-//                LOGGER.info(in.toString());
-                System.out.print((char) in.readByte());
-                System.out.flush();
+            StringBuffer stringBuffer = new StringBuffer();
+            while (in.isReadable()) {
+                stringBuffer.append((char) in.readByte());
             }
+            System.out.print(stringBuffer.toString());
+            System.out.flush();
+
         } finally {
             ReferenceCountUtil.release(msg); // (2)
         }
