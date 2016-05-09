@@ -1,48 +1,76 @@
-/*
- * Copyright 2009 Red Hat, Inc.
- *
- * Red Hat licenses this file to you under the Apache License, version 2.0
- * (the "License"); you may not use this file except in compliance with the
- * License.  You may obtain a copy of the License at:
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package de.uulm.vs.server;
 
-import java.net.InetSocketAddress;
-import java.util.concurrent.Executors;
+import io.netty.bootstrap.ServerBootstrap;
+
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 /**
  * Discards any incoming data.
- *
- * @author <a href="http://www.jboss.org/netty/">The Netty Project</a>
- * @author <a href="http://gleamynode.net/">Trustin Lee</a>
- *
- * @version $Rev: 2080 $, $Date: 2010-01-26 18:04:19 +0900 (Tue, 26 Jan 2010) $
  */
 public class DiscardServer {
 
+    private int port;
+
+    public DiscardServer(int port) {
+        this.port = port;
+    }
+
+    public void run() throws Exception {
+// NioEventLoopGroup is a multithreaded event loop that handles I/O operation.
+// Netty provides various EventLoopGroup implementations for different kind of transports.
+// We are implementing a server-side application in this example, and therefore two NioEventLoopGroup will be used.
+// The first one, often called 'boss', accepts an incoming connection.
+// The second one, often called 'worker', handles the traffic of the accepted connection once the boss accepts the
+// connection and registers the accepted connection to the worker. How many Threads are used and how they are
+// mapped to the created Channels depends on the EventLoopGroup implementation and may be even configurable via a constructor.
+        EventLoopGroup bossGroup = new NioEventLoopGroup(); // (1)
+        EventLoopGroup workerGroup = new NioEventLoopGroup();
+        try {
+//ServerBootstrap is a helper class that sets up a server. You can set up the server using a Channel directly.
+// However, please note that this is a tedious process, and you do not need to do that in most cases.
+            ServerBootstrap b = new ServerBootstrap(); // (2)
+            b.group(bossGroup, workerGroup)
+                    //is used to instantiate a new Channel to accept incoming connections
+                    .channel(NioServerSocketChannel.class) // (3)
+//            The handler specified here will always be evaluated by a newly accepted Channel.
+                    .childHandler(new ChannelInitializer<SocketChannel>() { // (4)
+                        @Override
+                        public void initChannel(SocketChannel ch) throws Exception {
+                            ch.pipeline().addLast(new DiscardServerHandler());
+                        }
+                    })
+//            TCP/IP server, so we are allowed to set the socket options such as tcpNoDelay and keepAlive
+                    .option(ChannelOption.SO_BACKLOG, 128)          // (5)
+// option() is for the NioServerSocketChannel that accepts incoming connections.
+// childOption() is for the Channels accepted by the parent ServerChannel, which is NioServerSocketChannel in this case.
+                    .childOption(ChannelOption.SO_KEEPALIVE, true); // (6)
+
+            // Bind and start to accept incoming connections.
+            ChannelFuture f = b.bind(port).sync(); // (7)
+
+            // Wait until the server socket is closed.
+            // In this example, this does not happen, but you can do that to gracefully
+            // shut down your server.
+            f.channel().closeFuture().sync();
+        } finally {
+            workerGroup.shutdownGracefully();
+            bossGroup.shutdownGracefully();
+        }
+    }
+
     public static void main(String[] args) throws Exception {
-//        // Configure the server.
-//        ServerBootstrap bootstrap = new ServerBootstrap(
-//                new NioServerSocketChannelFactory(
-//                        Executors.newCachedThreadPool(),
-//                        Executors.newCachedThreadPool()));
-//
-//        // Set up the pipeline factory.
-//        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-//            public ChannelPipeline getPipeline() throws Exception {
-//                return Channels.pipeline(new DiscardServerHandler());
-//            }
-//        });
-//
-//        // Bind and start to accept incoming connections.
-//        bootstrap.bind(new InetSocketAddress(8080));
+        int port;
+        if (args.length > 0) {
+            port = Integer.parseInt(args[0]);
+        } else {
+            port = 8080;
+        }
+        new DiscardServer(port).run();
     }
 }

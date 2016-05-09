@@ -1,69 +1,43 @@
-/*
- * Copyright 2009 Red Hat, Inc.
- *
- * Red Hat licenses this file to you under the Apache License, version 2.0
- * (the "License"); you may not use this file except in compliance with the
- * License.  You may obtain a copy of the License at:
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package de.uulm.vs.server;
 
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Level;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.util.ReferenceCountUtil;
+
 import java.util.logging.Logger;
 
+public class DiscardServerHandler extends ChannelInboundHandlerAdapter {
 
-/**
- * Handles a server-side channel.
- *
- * @author <a href="http://www.jboss.org/netty/">The Netty Project</a>
- * @author <a href="http://gleamynode.net/">Trustin Lee</a>
- *
- * @version $Rev: 2121 $, $Date: 2010-02-02 09:38:07 +0900 (Tue, 02 Feb 2010) $
- */
+    private final static Logger LOGGER = Logger.getLogger(DiscardServerHandler.class.getName());
 
-// extends SimpleChannelUpstreamHandler
-public class DiscardServerHandler {
+    //This method is called with the received message, whenever new data is received from a client.
+    @Override
+    public void channelRead(ChannelHandlerContext ctx, Object msg) { // (2)
 
-    private static final Logger logger = Logger.getLogger(
-            DiscardServerHandler.class.getName());
+        //Sending back the message
+//        ctx.write(msg);
+//        ctx.flush();
 
-//    private final AtomicLong transferredBytes = new AtomicLong();
-//
-//    public long getTransferredBytes() {
-//        return transferredBytes.get();
-//    }
-//
-//    @Override
-//    public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception {
-//        if (e instanceof ChannelStateEvent) {
-//            logger.info(e.toString());
-//        }
-//
-//        // Let SimpleChannelHandler call actual event handler methods below.
-//        super.handleUpstream(ctx, e);
-//    }
-//
-//    @Override
-//    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
-//        // Discard received data silently by doing nothing.
-//        transferredBytes.addAndGet(((ChannelBuffer) e.getMessage()).readableBytes());
-//    }
-//
-//    @Override
-//    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
-//        // Close the connection when an exception is raised.
-//        logger.log(
-//                Level.WARNING,
-//                "Unexpected exception from downstream.",
-//                e.getCause());
-//        e.getChannel().close();
-//    }
+// This code print the message to the console
+        ByteBuf in = (ByteBuf) msg;
+        try {
+            while (in.isReadable()) { // (1)
+//                LOGGER.info(in.toString());
+                System.out.print((char) in.readByte());
+                System.out.flush();
+            }
+        } finally {
+            ReferenceCountUtil.release(msg); // (2)
+        }
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) { // (4)
+        // Close the connection when an exception is raised.
+        cause.printStackTrace();
+        ctx.close();
+    }
+
 }

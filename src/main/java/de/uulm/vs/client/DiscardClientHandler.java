@@ -70,7 +70,7 @@ public class DiscardClientHandler extends SimpleChannelInboundHandler<Object> {
         public void operationComplete(ChannelFuture future) throws InterruptedException {
             if (future.isSuccess()) {
                 content.clear().writeBytes(getMessage().getBytes());
-                Thread.sleep(3000);
+                Thread.sleep(1);
                 generateTraffic();
             } else {
                 future.cause().printStackTrace();
