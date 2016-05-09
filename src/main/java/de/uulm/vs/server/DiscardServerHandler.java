@@ -15,10 +15,7 @@ public class DiscardServerHandler extends ChannelInboundHandlerAdapter {
     //This method is called with the received message, whenever new data is received from a client.
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) { // (2)
-
-        //Sending back the message
-//        ctx.write(msg);
-//        ctx.flush();
+//TODO: Reading msg form different pipelines in a same time -> separate the msg from different pipelines
 
 // This code print the message to the console
         ByteBuf in = (ByteBuf) msg;
