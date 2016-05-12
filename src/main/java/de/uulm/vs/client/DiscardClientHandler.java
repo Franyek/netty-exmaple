@@ -21,6 +21,9 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+
 public class DiscardClientHandler extends SimpleChannelInboundHandler<Object> {
 
     private ByteBuf content;
@@ -36,7 +39,8 @@ public class DiscardClientHandler extends SimpleChannelInboundHandler<Object> {
         content = ctx.alloc().buffer();
 
         // Send the initial messages.
-        generateTraffic();
+        //generateTraffic();
+        sendMsg();
     }
 
     @Override
@@ -70,7 +74,7 @@ public class DiscardClientHandler extends SimpleChannelInboundHandler<Object> {
         public void operationComplete(ChannelFuture future) throws InterruptedException {
             if (future.isSuccess()) {
                 content.clear().writeBytes(getMessage().getBytes());
-                Thread.sleep(1);
+                Thread.sleep(10);
                 generateTraffic();
             } else {
                 future.cause().printStackTrace();
@@ -81,5 +85,12 @@ public class DiscardClientHandler extends SimpleChannelInboundHandler<Object> {
 
     private String getMessage() {
         return (new java.sql.Timestamp(System.currentTimeMillis()) + " Client number: " + DiscardClient.CLIENT_NUMBER + " \n");
+    }
+
+    public void sendMsg() {
+        ByteBuf buffer = ctx.alloc().buffer();
+        //buffer.writeBytes("{ \"x\": 1, \"y\": " + 10 + " }", Charset.forName("UTF-8").newEncoder());
+        buffer.writeBytes(("{ \"x\": 1, \"y\": " + 10 + " }").getBytes());
+        ctx.writeAndFlush(buffer);
     }
 }

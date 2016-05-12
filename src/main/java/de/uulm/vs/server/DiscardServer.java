@@ -37,14 +37,15 @@ public class DiscardServer {
             ServerBootstrap b = new ServerBootstrap(); // (2)
             b.group(bossGroup, workerGroup)
                     //is used to instantiate a new Channel to accept incoming connections
-                    .channel(NioServerSocketChannel.class) // (3)
+                    .channel(NioServerSocketChannel.class)
+                            .childHandler(new ServerInitializer())
 //            The handler specified here will always be evaluated by a newly accepted Channel.
-                    .childHandler(new ChannelInitializer<SocketChannel>() { // (4)
-                        @Override
-                        public void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(new DiscardServerHandler());
-                        }
-                    })
+//                    .childHandler(new ChannelInitializer<SocketChannel>() { // (4)
+//                        @Override
+//                        public void initChannel(SocketChannel ch) throws Exception {
+//                            ch.pipeline().addLast(new DiscardServerHandler());
+//                        }
+//                    })
 //            TCP/IP server, so we are allowed to set the socket options such as tcpNoDelay and keepAlive
                     .option(ChannelOption.SO_BACKLOG, 128)          // (5)
 // option() is for the NioServerSocketChannel that accepts incoming connections.

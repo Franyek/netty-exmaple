@@ -1,6 +1,7 @@
 package de.uulm.vs.server;
 
 
+import com.google.gson.Gson;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -23,6 +24,9 @@ public class DiscardServerHandler extends ChannelInboundHandlerAdapter {
             while (in.isReadable()) {
                 stringBuffer.append((char) in.readByte());
             }
+            Gson gson = new Gson();
+
+            PObject object = gson.fromJson(stringBuffer.toString(), PObject.class);
             System.out.print(stringBuffer.toString());
             System.out.flush();
 
