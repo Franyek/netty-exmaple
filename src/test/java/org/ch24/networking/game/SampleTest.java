@@ -1,4 +1,4 @@
-package de.uulm.vs;
+package org.ch24.networking.game;
 
 import junit.framework.TestCase;
 

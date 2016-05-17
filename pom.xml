@@ -34,8 +34,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.0.2</version>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -47,7 +47,7 @@
                             <archive>
                                 <manifest>
                                     <addClasspath>true</addClasspath>
-                                    <mainClass>de.uulm.vs.server.DiscardServer</mainClass>
+                                    <mainClass>org.ch24.networking.game.server.DiscardServer</mainClass>
                                 </manifest>
                             </archive>
                             <descriptorRefs>
@@ -66,7 +66,7 @@
                             <archive>
                                 <manifest>
                                     <addClasspath>true</addClasspath>
-                                    <mainClass>de.uulm.vs.client.DiscardClient</mainClass>
+                                    <mainClass>org.ch24.networking.game.client.DiscardClient</mainClass>
                                 </manifest>
                             </archive>
                             <descriptorRefs>

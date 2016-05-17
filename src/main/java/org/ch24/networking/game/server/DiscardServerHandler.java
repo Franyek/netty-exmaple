@@ -1,4 +1,4 @@
-package de.uulm.vs.server;
+package org.ch24.networking.game.server;
 
 
 import com.google.gson.Gson;
@@ -26,7 +26,7 @@ public class DiscardServerHandler extends ChannelInboundHandlerAdapter {
             }
             Gson gson = new Gson();
 
-            PObject object = gson.fromJson(stringBuffer.toString(), PObject.class);
+            InputMessage object = gson.fromJson(stringBuffer.toString(), InputMessage.class);
             System.out.print(stringBuffer.toString());
             System.out.flush();
 

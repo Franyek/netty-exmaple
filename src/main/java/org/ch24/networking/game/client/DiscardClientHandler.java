@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package de.uulm.vs.client;
+package org.ch24.networking.game.client;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
@@ -28,19 +28,23 @@ public class DiscardClientHandler extends SimpleChannelInboundHandler<Object> {
 
     private ByteBuf content;
     private ChannelHandlerContext ctx;
+    private double cnt;
+    private int exponent;
 
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         this.ctx = ctx;
+        this.cnt = 1;
+        this.exponent = 1;
 
         // Initialize the message.
 //        content = ctx.alloc().directBuffer(DiscardClient.SIZE).writeZero(DiscardClient.SIZE).writeBytes("alma".getBytes());
         content = ctx.alloc().buffer();
 
         // Send the initial messages.
-        //generateTraffic();
-        sendMsg();
+        generateTraffic();
+        //sendMsg();
     }
 
     @Override
@@ -74,7 +78,7 @@ public class DiscardClientHandler extends SimpleChannelInboundHandler<Object> {
         public void operationComplete(ChannelFuture future) throws InterruptedException {
             if (future.isSuccess()) {
                 content.clear().writeBytes(getMessage().getBytes());
-                Thread.sleep(10);
+                Thread.sleep(2000);
                 generateTraffic();
             } else {
                 future.cause().printStackTrace();
@@ -84,13 +88,16 @@ public class DiscardClientHandler extends SimpleChannelInboundHandler<Object> {
     };
 
     private String getMessage() {
-        return (new java.sql.Timestamp(System.currentTimeMillis()) + " Client number: " + DiscardClient.CLIENT_NUMBER + " \n");
+//        return (new java.sql.Timestamp(System.currentTimeMillis()) + " Client number: " + DiscardClient.CLIENT_NUMBER + " \n");
+        cnt = cnt * Math.pow(10, exponent);
+        exponent++;
+        return (("{ \"acceleration\": " + cnt + ", \"angle\": " + cnt + " }"));
     }
 
     public void sendMsg() {
         ByteBuf buffer = ctx.alloc().buffer();
         //buffer.writeBytes("{ \"x\": 1, \"y\": " + 10 + " }", Charset.forName("UTF-8").newEncoder());
-        buffer.writeBytes(("{ \"x\": 1, \"y\": " + 10 + " }").getBytes());
+        buffer.writeBytes(("{ \"acceleration\": 1, \"angle\": " + 10 + " }").getBytes());
         ctx.writeAndFlush(buffer);
     }
 }
